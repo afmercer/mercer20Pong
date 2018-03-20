@@ -18,6 +18,7 @@ public class myTestAnimator implements Animator {
     private double yDir;
     private double xCoord;
     private double yCoord;
+    private double speed;
     private boolean moveRight;
     private boolean moveDown;
     private boolean ballInPlay;
@@ -53,29 +54,33 @@ public class myTestAnimator implements Animator {
         Random rand = new Random();
         int direction = rand.nextInt(4);
         if(direction == 0) {
-            xDir = 15 + rand.nextInt(6);
-            yDir = 15 + rand.nextInt(6);
+            xDir = 10 + rand.nextInt(11);
+            yDir = 10 + rand.nextInt(11);
             moveRight = true;
             moveDown = true;
         }
         else if(direction == 1) {
-            xDir = -20 + rand.nextInt(6);
-            yDir = 15 + rand.nextInt(6);
+            xDir = -20 + rand.nextInt(11);
+            yDir = 10 + rand.nextInt(11);
             moveRight = false;
             moveDown = true;
         }
         else if(direction == 2) {
-            xDir = 15 + rand.nextInt(6);
-            yDir = -20 + rand.nextInt(6);
+            xDir = 10 + rand.nextInt(11);
+            yDir = -20 + rand.nextInt(11);
             moveRight = true;
             moveDown = false;
         }
         else if(direction == 3) {
-            xDir = -20 + rand.nextInt(6);
-            yDir = -20 + rand.nextInt(6);
+            xDir = -20 + rand.nextInt(11);
+            yDir = -20 + rand.nextInt(11);
             moveRight = false;
             moveDown = false;
         }
+
+        double xSpeed = Math.abs(xDir);
+        double ySpeed = Math.abs(yDir);
+        speed = Math.sqrt((xSpeed*xSpeed)+(ySpeed*ySpeed));
 
         ballInPlay = true;
     }
@@ -101,45 +106,45 @@ public class myTestAnimator implements Animator {
 
         if(xCoord+50 >= width-15 && moveRight) {
             if(moveDown) {
-                xDir = -(20 * Math.cos(angle));
-                yDir = (20 * Math.sin(angle));
+                xDir = -(speed * Math.cos(angle));
+                yDir = (speed * Math.sin(angle));
             }
             else {
-                xDir = -(20 * Math.cos(angle));
-                yDir = (20 * Math.sin(angle));
+                xDir = -(speed * Math.cos(angle));
+                yDir = (speed * Math.sin(angle));
             }
             moveRight = false;
         }
         else if(xCoord-50 < 15 && xCoord-20 > 0 && yCoord > 600 && yCoord < height-600 && !moveRight) {
             if(moveDown) {
-                xDir = (20 * Math.cos(angle));
-                yDir = -(20 * Math.sin(angle));
+                xDir = (speed * Math.cos(angle));
+                yDir = -(speed * Math.sin(angle));
             }
             else {
-                xDir = (20 * Math.cos(angle));
-                yDir = -(20 * Math.sin(angle));
+                xDir = (speed * Math.cos(angle));
+                yDir = -(speed * Math.sin(angle));
             }
             moveRight = true;
         }
         else if(yCoord-50 <= 15 && !moveDown) {
             if(moveRight) {
-                xDir = (20 * Math.cos(angle));
-                yDir = -(20 * Math.sin(angle));
+                xDir = (speed * Math.cos(angle));
+                yDir = -(speed * Math.sin(angle));
             }
             else {
-                xDir = -(20 * Math.cos(angle));
-                yDir = (20 * Math.sin(angle));
+                xDir = -(speed * Math.cos(angle));
+                yDir = (speed * Math.sin(angle));
             }
             moveDown = true;
         }
         else if(yCoord+50 >= height-15 && moveDown) {
             if(moveRight) {
-                xDir = (20 * Math.cos(angle));
-                yDir = -(20 * Math.sin(angle));
+                xDir = (speed * Math.cos(angle));
+                yDir = -(speed * Math.sin(angle));
             }
             else {
-                xDir = -(20 * Math.cos(angle));
-                yDir = (20 * Math.sin(angle));
+                xDir = -(speed * Math.cos(angle));
+                yDir = (speed * Math.sin(angle));
             }
             moveDown = false;
         }
