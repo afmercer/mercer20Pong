@@ -9,6 +9,7 @@ import java.util.Random;
 
 /**
  * Created by AdamMercer on 3/19/18.
+ *
  */
 
 public class myTestAnimator implements Animator {
@@ -19,6 +20,7 @@ public class myTestAnimator implements Animator {
     private double yCoord;
     private boolean moveRight;
     private boolean moveDown;
+    private boolean ballInPlay;
 
     public myTestAnimator() {
         newBall();
@@ -75,6 +77,7 @@ public class myTestAnimator implements Animator {
             moveDown = false;
         }
 
+        ballInPlay = true;
     }
 
     @Override
@@ -86,6 +89,7 @@ public class myTestAnimator implements Animator {
         //draw walls of playing area
         Paint whitePaint = new Paint();
         whitePaint.setColor(Color.WHITE);
+        whitePaint.setTextSize(50);
         canvas.drawRect(15, 0, width-15, 15, whitePaint);
         canvas.drawRect(width-15, 0, width, height, whitePaint);
         canvas.drawRect(15, height-15, width-15, height, whitePaint);
@@ -140,7 +144,8 @@ public class myTestAnimator implements Animator {
             moveDown = false;
         }
         else if(xCoord+50 < 0) {
-            newBall();
+            ballInPlay = false;
+            canvas.drawText("Tap screen for new ball", 760, 696, whitePaint);
         }
 
         xCoord = xCoord+xDir;
@@ -152,6 +157,8 @@ public class myTestAnimator implements Animator {
 
     @Override
     public void onTouch(MotionEvent event) {
-
+        if(!ballInPlay) {
+            newBall();
+        }
     }
 }
