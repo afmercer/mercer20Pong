@@ -11,8 +11,6 @@ import android.view.MotionEvent;
 
 public class myTestAnimator implements Animator {
 
-    private int count = 0;
-    private boolean goBackwards;
     private int xDir = 10;
     private int yDir = 15;
     private int xCoord = 100;
