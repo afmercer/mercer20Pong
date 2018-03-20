@@ -13,6 +13,10 @@ public class myTestAnimator implements Animator {
 
     private int count = 0;
     private boolean goBackwards;
+    private int xDir = 10;
+    private int yDir = 15;
+    private int xCoord = 100;
+    private int yCoord = 500;
 
     @Override
     public int interval() {
@@ -50,17 +54,21 @@ public class myTestAnimator implements Animator {
         //draw paddle
         canvas.drawRect(0, 600, 15, height-600, whitePaint);
 
-        int xCoord = width/2;
-        int yCoord = height/2;
 
-        if (goBackwards) {
-            count--;
-        }
-        else {
-            count++;
+
+        int num = xCoord%200;
+        double angle = Math.atan(yDir/xDir);
+        if(num < 5) {
+            xDir = (int)(10*Math.cos(angle));
+            yDir = -(int)(10*Math.sin(angle));
         }
 
-        canvas.drawCircle(xCoord+(count*10), yCoord-(count*10), 50, whitePaint);
+        xCoord = xCoord+xDir;
+        yCoord = yCoord+yDir;
+
+
+
+        canvas.drawCircle(xCoord, yCoord, 50, whitePaint);
 
     }
 
