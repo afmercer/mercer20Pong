@@ -48,10 +48,11 @@ public class myTestAnimator implements Animator {
     }
 
     public void newBall() {
-        xCoord = 1024;
-        yCoord = 696;
-
         Random rand = new Random();
+
+        xCoord = 100 + rand.nextInt(1800);
+        yCoord = 100 + rand.nextInt(900);
+
         int direction = rand.nextInt(4);
         if(direction == 0) {
             xDir = 10 + rand.nextInt(11);
