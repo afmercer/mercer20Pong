@@ -50,6 +50,17 @@ public class myTestAnimator implements Animator {
         //draw paddle
         canvas.drawRect(0, 600, 15, height-600, whitePaint);
 
+        int xCoord = width/2;
+        int yCoord = height/2;
+
+        if (goBackwards) {
+            count--;
+        }
+        else {
+            count++;
+        }
+
+        canvas.drawCircle(xCoord+(count*10), yCoord-(count*10), 50, whitePaint);
 
     }
 
