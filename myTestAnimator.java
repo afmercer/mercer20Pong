@@ -14,6 +14,8 @@ import java.util.Random;
 
 public class myTestAnimator implements Animator {
 
+    private int width;
+    private int height;
     private double xDir;
     private double yDir;
     private double xCoord;
@@ -22,6 +24,7 @@ public class myTestAnimator implements Animator {
     private boolean moveRight;
     private boolean moveDown;
     private boolean ballInPlay;
+    private int paddleSize = 550;
 
     public myTestAnimator() {
         newBall();
@@ -86,15 +89,20 @@ public class myTestAnimator implements Animator {
         ballInPlay = true;
     }
 
-    public void setPaddleSize() {
-
+    public void setPaddleSize(String size) {
+        if(size.equalsIgnoreCase("beginner")) {
+            paddleSize = 500;
+        }
+        else if(size.equalsIgnoreCase("expert")) {
+            paddleSize = 600;
+        }
     }
 
     @Override
     public void tick(Canvas canvas) {
         //TODO citation
-        int width = canvas.getWidth();
-        int height = canvas.getHeight();
+        width = canvas.getWidth();
+        height = canvas.getHeight();
 
         //draw walls of playing area
         Paint whitePaint = new Paint();
@@ -104,22 +112,9 @@ public class myTestAnimator implements Animator {
         canvas.drawRect(width-15, 0, width, height, whitePaint);
         canvas.drawRect(15, height-15, width-15, height, whitePaint);
         //draw paddle
-        canvas.drawRect(0, 600, 15, height-600, whitePaint);
-
-        Paint buttonPaint = new Paint();
-        buttonPaint.setColor(Color.rgb(150, 150, 150));
-        canvas.drawRect(width/2 - 300, 50, width/2 - 50, 200, buttonPaint);
-        canvas.drawRect(width/2 + 50, 50, width/2 + 300, 200, buttonPaint);
-
-        Paint buttonText = new Paint();
-        buttonText.setColor(Color.BLACK);
-        buttonText.setTextSize(45);
-        canvas.drawText("Beginner", width/2 - 270, 140, buttonText);
-        canvas.drawText("Expert", width/2 + 105, 140, buttonText);
-
+        canvas.drawRect(0, paddleSize, 15, height-paddleSize, whitePaint);
 
         double angle = Math.atan(yDir/xDir);
-
         if(xCoord+50 >= width-15 && moveRight) {
             if(moveDown) {
                 xDir = -(speed * Math.cos(angle));
@@ -131,7 +126,7 @@ public class myTestAnimator implements Animator {
             }
             moveRight = false;
         }
-        else if(xCoord-50 < 15 && xCoord-20 > 0 && yCoord > 600 && yCoord < height-600 && !moveRight) {
+        else if(xCoord-50 < 15 && xCoord-20 > 0 && yCoord > paddleSize && yCoord < height-paddleSize && !moveRight) {
             if(moveDown) {
                 xDir = (speed * Math.cos(angle));
                 yDir = -(speed * Math.sin(angle));
@@ -174,6 +169,17 @@ public class myTestAnimator implements Animator {
 
         canvas.drawCircle((int)xCoord, (int)yCoord, 50, whitePaint);
 
+        Paint buttonPaint = new Paint();
+        buttonPaint.setColor(Color.argb(175, 150, 150, 150));
+        canvas.drawRect(width/2 - 300, 50, width/2 - 50, 200, buttonPaint);
+        canvas.drawRect(width/2 + 50, 50, width/2 + 300, 200, buttonPaint);
+
+        Paint buttonText = new Paint();
+        buttonText.setColor(Color.argb(175, 0, 0, 0));
+        buttonText.setTextSize(45);
+        canvas.drawText("Beginner", width/2 - 270, 140, buttonText);
+        canvas.drawText("Expert", width/2 + 105, 140, buttonText);
+
     }
 
     @Override
@@ -181,14 +187,18 @@ public class myTestAnimator implements Animator {
         int xPos;
         int yPos;
 
-        if(!ballInPlay) {
-            newBall();
-        }
-
         if(event.getAction() == (MotionEvent.ACTION_DOWN)) {
             xPos = (int)event.getX();
             yPos = (int)event.getY();
-
+            if(xPos > width/2-300 && xPos < width/2-50 && yPos > 50 && yPos < 200) {
+                setPaddleSize("beginner");
+            }
+            else if(xPos > width/2+50 && xPos < width/2+300 && yPos > 50 && yPos < 200) {
+                setPaddleSize("expert");
+            }
+            else if(!ballInPlay) {
+                newBall();
+            }
         }
     }
 }
