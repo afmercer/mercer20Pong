@@ -86,6 +86,10 @@ public class myTestAnimator implements Animator {
         ballInPlay = true;
     }
 
+    public void setPaddleSize() {
+
+    }
+
     @Override
     public void tick(Canvas canvas) {
         //TODO citation
@@ -101,6 +105,17 @@ public class myTestAnimator implements Animator {
         canvas.drawRect(15, height-15, width-15, height, whitePaint);
         //draw paddle
         canvas.drawRect(0, 600, 15, height-600, whitePaint);
+
+        Paint buttonPaint = new Paint();
+        buttonPaint.setColor(Color.rgb(150, 150, 150));
+        canvas.drawRect(width/2 - 300, 50, width/2 - 50, 200, buttonPaint);
+        canvas.drawRect(width/2 + 50, 50, width/2 + 300, 200, buttonPaint);
+
+        Paint buttonText = new Paint();
+        buttonText.setColor(Color.BLACK);
+        buttonText.setTextSize(45);
+        canvas.drawText("Beginner", width/2 - 270, 140, buttonText);
+        canvas.drawText("Expert", width/2 + 105, 140, buttonText);
 
 
         double angle = Math.atan(yDir/xDir);
@@ -163,8 +178,17 @@ public class myTestAnimator implements Animator {
 
     @Override
     public void onTouch(MotionEvent event) {
+        int xPos;
+        int yPos;
+
         if(!ballInPlay) {
             newBall();
+        }
+
+        if(event.getAction() == (MotionEvent.ACTION_DOWN)) {
+            xPos = (int)event.getX();
+            yPos = (int)event.getY();
+
         }
     }
 }
