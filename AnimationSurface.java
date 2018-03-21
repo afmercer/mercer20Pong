@@ -16,6 +16,7 @@ import android.view.View.OnTouchListener;
  * 
  * @author Steve Vegdahl
  * @author Andrew Nuxoll
+ * @author Adam Mercer
  * @version February 2016
  * 
  * 
