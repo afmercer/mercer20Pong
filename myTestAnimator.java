@@ -3,6 +3,7 @@ package edu.up.cs301.mercer20.mercer20pong;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.MotionEvent;
 import java.util.Random;
 
@@ -21,15 +22,23 @@ public class myTestAnimator implements Animator {
     //instance variables
     private int width; //width of animation surface
     private int height; //height of animation surface
-    private double xDir; //scaled amount of horizontal motion the ball has
-    private double yDir; //scaled amount of vertical motion the ball has
-    private double xCoord; //x coordinate of the center of the ball
-    private double yCoord; //y coordinate of center of ball
-    private double speed; //amount of pixels the ball moves per frame
+    private int xDir; //amount of pixels ball moves in horizontal direction per frame
+    private int yDir; //amount of pixels ball moves in vertical direction per frame
+    private int xCoord; //x coordinate of the center of the ball
+    private int yCoord; //y coordinate of center of ball
     private boolean moveRight; //whether ball is moving right
     private boolean moveDown; //whether the ball is moving down
     private boolean ballInPlay; //whether there is a ball on the screen
-    private int paddleSize = 550; //determines size of paddle
+    private int paddleSize = 210; //determines size of paddle
+    private int paddleCenter = 696; //determines center of paddle
+    private int xStartTouch; //determines x coordinate where user started to touch the screen
+    private int yStartTouch; //determines x coordinate where user started to touch the screen
+    private int compPaddleCenter;
+    private int compPaddleSpeed;
+    private int reactionTime = 10;
+    private int playerScore = 0;
+    private int compScore = 0;
+    private boolean updateScore = false;
 
     /**
      * Constructor, creates a new ball when a new test begins
@@ -65,6 +74,10 @@ public class myTestAnimator implements Animator {
      */
     @Override
     public boolean doPause() {
+        if(playerScore == 10 || compScore == 10) {
+            return true;
+        }
+
         return false;
     }
 
@@ -86,50 +99,46 @@ public class myTestAnimator implements Animator {
         Random rand = new Random(); //used to generate random values
 
         //create new ball at a random position on the screen
-        xCoord = 100 + rand.nextInt(1800);
-        yCoord = 100 + rand.nextInt(900);
+        xCoord = 1024;//100 + rand.nextInt(1800);
+        yCoord = 696;//100 + rand.nextInt(900);
 
         //send ball in a random direction at a random speed
         int direction = rand.nextInt(4);
         //ball goes up and right
         if(direction == 0) {
-            //ball moves between 10-20 pixels in the
+            //ball moves between 30-40 pixels in the
             // horizontal and vertical direction
-            xDir = 10 + rand.nextInt(11);
-            yDir = 10 + rand.nextInt(11);
+            xDir = 30 + rand.nextInt(11);
+            yDir = 30 + rand.nextInt(11);
             moveRight = true;
             moveDown = true;
         }
         //ball goes up and left
         else if(direction == 1) {
-            xDir = -20 + rand.nextInt(11);
-            yDir = 10 + rand.nextInt(11);
+            xDir = -40 + rand.nextInt(11);
+            yDir = 30 + rand.nextInt(11);
             moveRight = false;
             moveDown = true;
         }
         //ball goes down and right
         else if(direction == 2) {
-            xDir = 10 + rand.nextInt(11);
-            yDir = -20 + rand.nextInt(11);
+            xDir = 30 + rand.nextInt(11);
+            yDir = -40 + rand.nextInt(11);
             moveRight = true;
             moveDown = false;
         }
         //ball goes down and left
         else if(direction == 3) {
-            xDir = -20 + rand.nextInt(11);
-            yDir = -20 + rand.nextInt(11);
+            xDir = -40 + rand.nextInt(11);
+            yDir = -40 + rand.nextInt(11);
             moveRight = false;
             moveDown = false;
         }
 
-        //amount of pixels ball moves in horizontal direction
-        double xSpeed = Math.abs(xDir);
-        //amount of pixels ball moves in vertical direction
-        double ySpeed = Math.abs(yDir);
-        //amount of total pixels the ball moves per frame using pythagorean theorem
-        speed = Math.sqrt((xSpeed*xSpeed)+(ySpeed*ySpeed));
-
+        compPaddleSpeed = Math.abs(yDir);
+        compPaddleCenter = yCoord;
         ballInPlay = true;
+        updateScore = false;
     }
 
     /**
@@ -142,10 +151,10 @@ public class myTestAnimator implements Animator {
         if(size.equalsIgnoreCase("beginner")) {
             //amount of space between the paddle and the edges of the
             //screen on the top and bottom
-            paddleSize = 500;
+            paddleSize = 330;
         }
         else if(size.equalsIgnoreCase("expert")) {
-            paddleSize = 600;
+            paddleSize = 210;
         }
     }
 
@@ -173,88 +182,31 @@ public class myTestAnimator implements Animator {
         whitePaint.setColor(Color.WHITE);
         whitePaint.setTextSize(50);
         canvas.drawRect(15, 0, width-15, 15, whitePaint);
-        canvas.drawRect(width-15, 0, width, height, whitePaint);
+        //canvas.drawRect(width-15, 0, width, height, whitePaint);
         canvas.drawRect(15, height-15, width-15, height, whitePaint);
-        //draw paddle
-        canvas.drawRect(0, paddleSize, 15, height-paddleSize, whitePaint);
 
-        /**
-         External Citation
-         Date:      20 March 2018
-         Problem:   Did not know how to implement trig functions
-         Resource:  https://stackoverflow.com/questions/30434088/
-                    how-to-use-sine-cosine-log-function-in-android-studio
-         Solution: I used an example from this post
-         */
 
-        //angle of the direction the ball is moving in
-        double angle = Math.atan(yDir/xDir);
+        collision(canvas, whitePaint);
 
-        //determine the direction the ball is moving in when it collides
-        //with a certain wall, and determine the new direction of the
-        //the ball using trig functions
-
-        //ball collides with right wall
-        if(xCoord+50 >= width-15 && moveRight) {
-            if(moveDown) {
-                xDir = -(speed * Math.cos(angle));
-                yDir = (speed * Math.sin(angle));
-            }
-            else {
-                xDir = -(speed * Math.cos(angle));
-                yDir = (speed * Math.sin(angle));
-            }
-            moveRight = false;
-        }
-        //ball collides with paddle
-        else if(xCoord-50 < 15 && xCoord-20 > 0 && yCoord > paddleSize
-                && yCoord < height-paddleSize && !moveRight) {
-            if(moveDown) {
-                xDir = (speed * Math.cos(angle));
-                yDir = -(speed * Math.sin(angle));
-            }
-            else {
-                xDir = (speed * Math.cos(angle));
-                yDir = -(speed * Math.sin(angle));
-            }
-            moveRight = true;
-        }
-        //ball collides with top wall
-        else if(yCoord-50 <= 15 && !moveDown) {
-            if(moveRight) {
-                xDir = (speed * Math.cos(angle));
-                yDir = -(speed * Math.sin(angle));
-            }
-            else {
-                xDir = -(speed * Math.cos(angle));
-                yDir = (speed * Math.sin(angle));
-            }
-            moveDown = true;
-        }
-        //ball collides with bottom wall
-        else if(yCoord+50 >= height-15 && moveDown) {
-            if(moveRight) {
-                xDir = (speed * Math.cos(angle));
-                yDir = -(speed * Math.sin(angle));
-            }
-            else {
-                xDir = -(speed * Math.cos(angle));
-                yDir = (speed * Math.sin(angle));
-            }
-            moveDown = false;
-        }
-        //ball leaves the playing area
-        else if(xCoord+50 < 0) {
-            ballInPlay = false;
-            canvas.drawText("Tap screen for new ball", 760, 696, whitePaint);
-        }
 
         //update coordinates of ball
         xCoord = xCoord+xDir;
         yCoord = yCoord+yDir;
 
         //draw ball in correct position
-        canvas.drawCircle((int)xCoord, (int)yCoord, 50, whitePaint);
+        canvas.drawCircle(xCoord, yCoord, 45, whitePaint);
+
+        //draw human paddle
+        Paint greenPaint = new Paint();
+        greenPaint.setColor(Color.GREEN);
+        Paint redPaint = new Paint();
+        redPaint.setColor(Color.RED);
+        canvas.drawRect(0, paddleCenter-paddleSize/2, 15, paddleCenter+paddleSize/2, greenPaint);
+        canvas.drawRect(0, paddleCenter-paddleSize/4, 15, paddleCenter+paddleSize/4, redPaint);
+
+        //draw computer paddle
+        drawComputerPaddle(canvas, yCoord, yDir, reactionTime, whitePaint);
+        reactionTime++;
 
         //draw buttons on animation surface
         Paint buttonPaint = new Paint();
@@ -268,6 +220,88 @@ public class myTestAnimator implements Animator {
         buttonText.setTextSize(45);
         canvas.drawText("Beginner", width/2 - 270, 140, buttonText);
         canvas.drawText("Expert", width/2 + 105, 140, buttonText);
+
+        Paint scoreText = new Paint();
+        scoreText.setColor(Color.argb(175, 255, 255, 255));
+        scoreText.setTextSize(80);
+        canvas.drawText(playerScore+"  :  "+compScore, width/2 - 100, height - 140, scoreText);
+    }
+
+    /**
+     * determine which wall the ball collides with, and
+     * change the direction of the ball accordingly
+     *
+     * @param canvas the graphics object on which to draw
+     * @param ballPaint paint to draw the ball with
+     *
+     */
+    public void collision(Canvas canvas, Paint ballPaint) {
+        //ball collides with computer paddle
+        if(xCoord+45 > width - 15 && xCoord < width && yCoord > compPaddleCenter-105
+                && yCoord < compPaddleCenter+105 && moveRight) {
+            xDir = -xDir;
+            moveRight = false;
+        }
+        //ball collides with player paddle
+        else if(xCoord-45 < 15 && xCoord > 0 && yCoord > paddleCenter-paddleSize/2
+                && yCoord < paddleCenter+paddleSize/2 && !moveRight) {
+            if(yCoord >= paddleCenter+paddleSize/4 || yCoord <= paddleCenter-paddleSize/4) {
+                xDir = -(int)(1.05*xDir);
+                yDir = (int)(1.1*yDir);
+            }
+            else if(yCoord < paddleCenter+paddleSize/4 || yCoord > paddleCenter-paddleSize/4) {
+                xDir = -(int)(0.95*xDir);
+                yDir = (int)(0.9*yDir);
+            }
+            moveRight = true;
+            reactionTime = 0;
+        }
+        //ball collides with top wall
+        else if(yCoord-45 <= 15 && !moveDown) {
+            yDir = -yDir;
+            moveDown = true;
+        }
+        //ball collides with bottom wall
+        else if(yCoord+45 >= height-15 && moveDown) {
+            yDir = -yDir;
+            moveDown = false;
+        }
+        //ball leaves the playing area
+        else if(xCoord+45 < 0) {
+            compScore = ballExitsScreen(canvas, compScore, ballPaint);
+        }
+        else if(xCoord-45 > width) {
+            playerScore = ballExitsScreen(canvas, playerScore, ballPaint);
+        }
+    }
+
+    public int ballExitsScreen(Canvas canvas, int changeScore, Paint textPaint) {
+        ballInPlay = false;
+        if(!updateScore) {
+            changeScore++;
+            updateScore = true;
+        }
+        canvas.drawText("Tap screen for new ball", 760, 696, textPaint);
+        return changeScore;
+    }
+
+    public void drawComputerPaddle(Canvas canvas, int yCoordBall, int ySpeed, int reactTime, Paint paddlePaint) {
+
+        if(!ballInPlay || reactTime < 0) {
+            canvas.drawRect(width - 15, compPaddleCenter + 105, width, compPaddleCenter - 105, paddlePaint);
+        }
+        else if(yCoordBall + ySpeed > compPaddleCenter + 0.82*compPaddleSpeed) {
+            compPaddleCenter = compPaddleCenter + (int)(0.82*compPaddleSpeed);
+            canvas.drawRect(width - 15, compPaddleCenter + 105, width, compPaddleCenter - 105, paddlePaint);
+        }
+        else if(yCoordBall + ySpeed < compPaddleCenter - 0.82*compPaddleSpeed) {
+            compPaddleCenter = compPaddleCenter - (int)(0.82*compPaddleSpeed);
+            canvas.drawRect(width - 15, compPaddleCenter + 105, width, compPaddleCenter - 105, paddlePaint);
+        }
+        else {
+            compPaddleCenter = yCoordBall + ySpeed;
+            canvas.drawRect(width-15, compPaddleCenter + 105, width, compPaddleCenter - 105, paddlePaint);
+        }
     }
 
     /**
@@ -303,6 +337,9 @@ public class myTestAnimator implements Animator {
              */
             xPos = (int)event.getX();
             yPos = (int)event.getY();
+            xStartTouch = xPos;
+            yStartTouch = yPos;
+
             //Change game mode to beginner if user touches area
             // defined as "Beginner" button
             if(xPos > width/2-300 && xPos < width/2-50 && yPos > 50
@@ -318,6 +355,30 @@ public class myTestAnimator implements Animator {
             //If no ball is in play, user taps screen to create a new ball
             else if(!ballInPlay) {
                 newBall();
+            }
+            //user is controlling the paddle
+            else {
+                paddleCenter = yPos;
+            }
+        }
+        else if(event.getAction() == MotionEvent.ACTION_MOVE) {
+            yPos = (int)event.getY();
+            if(xStartTouch > width/2-300 && xStartTouch < width/2-50 &&
+                    yStartTouch > 50 && yStartTouch < 200) {
+                //user started the touch inside "Beginner" button, do nothing
+            }
+            else if(xStartTouch > width/2+50 && xStartTouch < width/2+300 &&
+                    yStartTouch > 50 && yStartTouch < 200) {
+                //user started the touch inside "Expert" button, do nothing
+            }
+            else if(yPos - paddleSize/2 <= 0) {
+                paddleCenter = paddleSize/2;
+            }
+            else if(yPos + paddleSize/2 >= height) {
+                paddleCenter = height - paddleSize/2;
+            }
+            else {
+                paddleCenter = yPos;
             }
         }
     }
