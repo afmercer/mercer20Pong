@@ -29,22 +29,22 @@ public class myTestAnimator implements Animator {
     private boolean moveRight; //whether ball is moving right
     private boolean moveDown; //whether the ball is moving down
     private boolean ballInPlay; //whether there is a ball on the screen
-    private int paddleSize = 210; //determines size of paddle
-    private int paddleCenter = 696; //determines center of paddle
+    private int paddleSize; //determines size of paddle
+    private int paddleCenter; //determines center of paddle
     private int xStartTouch; //determines x coordinate where user started to touch the screen
     private int yStartTouch; //determines x coordinate where user started to touch the screen
     private int compPaddleCenter;
     private int compPaddleSpeed;
-    private int reactionTime = 10;
-    private int playerScore = 0;
-    private int compScore = 0;
+    private int playerScore;
+    private int compScore;
     private boolean updateScore = false;
+    private boolean gameOver = false;
 
     /**
      * Constructor, creates a new ball when a new test begins
      */
     public myTestAnimator() {
-        newBall();
+        newGame();
     }
 
     /**
@@ -106,31 +106,31 @@ public class myTestAnimator implements Animator {
         int direction = rand.nextInt(4);
         //ball goes up and right
         if(direction == 0) {
-            //ball moves between 30-40 pixels in the
+            //ball moves between 50-60 pixels in the
             // horizontal and vertical direction
-            xDir = 30 + rand.nextInt(11);
-            yDir = 30 + rand.nextInt(11);
+            xDir = 50 + rand.nextInt(11);
+            yDir = 50 + rand.nextInt(11);
             moveRight = true;
             moveDown = true;
         }
         //ball goes up and left
         else if(direction == 1) {
-            xDir = -40 + rand.nextInt(11);
-            yDir = 30 + rand.nextInt(11);
+            xDir = -60 + rand.nextInt(11);
+            yDir = 50 + rand.nextInt(11);
             moveRight = false;
             moveDown = true;
         }
         //ball goes down and right
         else if(direction == 2) {
-            xDir = 30 + rand.nextInt(11);
-            yDir = -40 + rand.nextInt(11);
+            xDir = 50 + rand.nextInt(11);
+            yDir = -60 + rand.nextInt(11);
             moveRight = true;
             moveDown = false;
         }
         //ball goes down and left
         else if(direction == 3) {
-            xDir = -40 + rand.nextInt(11);
-            yDir = -40 + rand.nextInt(11);
+            xDir = -60 + rand.nextInt(11);
+            yDir = -60 + rand.nextInt(11);
             moveRight = false;
             moveDown = false;
         }
@@ -185,9 +185,8 @@ public class myTestAnimator implements Animator {
         //canvas.drawRect(width-15, 0, width, height, whitePaint);
         canvas.drawRect(15, height-15, width-15, height, whitePaint);
 
-
+        //check if the ball collided with a wall or paddle
         collision(canvas, whitePaint);
-
 
         //update coordinates of ball
         xCoord = xCoord+xDir;
@@ -196,17 +195,16 @@ public class myTestAnimator implements Animator {
         //draw ball in correct position
         canvas.drawCircle(xCoord, yCoord, 45, whitePaint);
 
+        //draw computer paddle
+        drawComputerPaddle(canvas, yCoord, yDir, whitePaint);
+
         //draw human paddle
         Paint greenPaint = new Paint();
         greenPaint.setColor(Color.GREEN);
         Paint redPaint = new Paint();
         redPaint.setColor(Color.RED);
         canvas.drawRect(0, paddleCenter-paddleSize/2, 15, paddleCenter+paddleSize/2, greenPaint);
-        canvas.drawRect(0, paddleCenter-paddleSize/4, 15, paddleCenter+paddleSize/4, redPaint);
-
-        //draw computer paddle
-        drawComputerPaddle(canvas, yCoord, yDir, reactionTime, whitePaint);
-        reactionTime++;
+        canvas.drawRect(0, paddleCenter-paddleSize/5, 15, paddleCenter+paddleSize/5, redPaint);
 
         //draw buttons on animation surface
         Paint buttonPaint = new Paint();
@@ -245,16 +243,18 @@ public class myTestAnimator implements Animator {
         //ball collides with player paddle
         else if(xCoord-45 < 15 && xCoord > 0 && yCoord > paddleCenter-paddleSize/2
                 && yCoord < paddleCenter+paddleSize/2 && !moveRight) {
-            if(yCoord >= paddleCenter+paddleSize/4 || yCoord <= paddleCenter-paddleSize/4) {
-                xDir = -(int)(1.05*xDir);
-                yDir = (int)(1.1*yDir);
+            if(Math.abs(xDir) < 33 || Math.abs(yDir) < 35) {
+                xDir = -xDir;
             }
-            else if(yCoord < paddleCenter+paddleSize/4 || yCoord > paddleCenter-paddleSize/4) {
+            if(yCoord >= paddleCenter+paddleSize/5 || yCoord <= paddleCenter-paddleSize/5) {
+                xDir = -(int)(1.05*xDir);
+                yDir = (int)(1.15*yDir);
+            }
+            else if(yCoord < paddleCenter+paddleSize/5 && yCoord > paddleCenter-paddleSize/5) {
                 xDir = -(int)(0.95*xDir);
                 yDir = (int)(0.9*yDir);
             }
             moveRight = true;
-            reactionTime = 0;
         }
         //ball collides with top wall
         else if(yCoord-45 <= 15 && !moveDown) {
@@ -281,21 +281,37 @@ public class myTestAnimator implements Animator {
             changeScore++;
             updateScore = true;
         }
-        canvas.drawText("Tap screen for new ball", 760, 696, textPaint);
+
+        if(changeScore == 10) {
+            canvas.drawText("Game Over, tap screen to start a new game", 600, 696, textPaint);
+            gameOver = true;
+        }
+        else{
+            canvas.drawText("Tap screen for new ball", 760, 696, textPaint);
+        }
         return changeScore;
     }
 
-    public void drawComputerPaddle(Canvas canvas, int yCoordBall, int ySpeed, int reactTime, Paint paddlePaint) {
+    public void newGame() {
+        playerScore = 0;
+        compScore = 0;
+        paddleSize = 330;
+        paddleCenter = 696;
+        gameOver = false;
+        newBall();
+    }
 
-        if(!ballInPlay || reactTime < 0) {
+    public void drawComputerPaddle(Canvas canvas, int yCoordBall, int ySpeed, Paint paddlePaint) {
+
+        if(!ballInPlay) {
             canvas.drawRect(width - 15, compPaddleCenter + 105, width, compPaddleCenter - 105, paddlePaint);
         }
-        else if(yCoordBall + ySpeed > compPaddleCenter + 0.82*compPaddleSpeed) {
-            compPaddleCenter = compPaddleCenter + (int)(0.82*compPaddleSpeed);
+        else if(yCoordBall + ySpeed > compPaddleCenter + 0.835*compPaddleSpeed) {
+            compPaddleCenter = compPaddleCenter + (int)(0.835*compPaddleSpeed);
             canvas.drawRect(width - 15, compPaddleCenter + 105, width, compPaddleCenter - 105, paddlePaint);
         }
-        else if(yCoordBall + ySpeed < compPaddleCenter - 0.82*compPaddleSpeed) {
-            compPaddleCenter = compPaddleCenter - (int)(0.82*compPaddleSpeed);
+        else if(yCoordBall + ySpeed < compPaddleCenter - 0.835*compPaddleSpeed) {
+            compPaddleCenter = compPaddleCenter - (int)(0.835*compPaddleSpeed);
             canvas.drawRect(width - 15, compPaddleCenter + 105, width, compPaddleCenter - 105, paddlePaint);
         }
         else {
@@ -340,9 +356,12 @@ public class myTestAnimator implements Animator {
             xStartTouch = xPos;
             yStartTouch = yPos;
 
+            if(gameOver) {
+                newGame();
+            }
             //Change game mode to beginner if user touches area
             // defined as "Beginner" button
-            if(xPos > width/2-300 && xPos < width/2-50 && yPos > 50
+            else if(xPos > width/2-300 && xPos < width/2-50 && yPos > 50
                     && yPos < 200) {
                 setPaddleSize("beginner");
             }
