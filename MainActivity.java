@@ -15,6 +15,15 @@ import android.app.Activity;
  * of the paddle. "Beginner" button makes paddle larger, "Expert" button makes
  * paddle smaller.
  *
+ * The game is played between a human and a computer. The game ends when one
+ * player reaches 10 points. A point is scored when the ball leaves the
+ * opponent's side of the screen. The human paddle has a red area and green area.
+ * If the ball is hit in the green area, the ball will bounce back with a slightly
+ * greater speed, and a slightly steeper angle. If the ball hits the red area, the
+ * ball will bounce back with slightly less speed, and at a slightly shallower angle.
+ * The user should try to hit the ball with the green part of the paddle in order
+ * to make the computer miss.
+ *
  * @author Andrew Nuxoll
  * @author Steven R. Vegdahl
  * @author Adam Mercer
